@@ -3,28 +3,83 @@
 
 #include <string>
 #include <stdint.h>
+#include <memory>
+#include <list>
 
 namespace sf {
 
-class LoggerEvent {
+enum LogLevel {
+    DEBUG = 0,
+    INFO,
+    WARN,
+    ERROR,
+    FATAL
+};
+
+
+class LogEvent {
 public:
-    LoggerEvent();
+    typedef std::shared_ptr<LogEvent> ptr;
+    LogEvent();
 
 private:
     const char* _file = nullptr;
     int32_t _line = 0;
+    uint32_t _elapse = 0;
     uint32_t _threadId = 0;
-    uint32_t _corotineId = 0;
-    uint64_t _time;
+    uint32_t _coroutineId = 0;
+    uint64_t _timestamp;
 
     std::string _content;
-
-
 };
-class Logger {};
 
-class Appender {};
-class Formatter {};
+
+class Logger {
+public:
+    typedef std::shared_ptr<Logger> ptr;
+
+    Logger(const std::string &name = "root");
+    
+    void log(LogLevel level, LogEvent::ptr event);
+
+    void debug(LogEvent::ptr event);
+    void info(LogEvent::ptr event);
+    void warn(LogEvent::ptr event);
+    void error(LogEvent::ptr event);
+    void fatal(LogEvent::ptr event);
+
+    void addAppender(Appender::ptr appender);
+    void delAppender(Appender::ptr appender);
+    LogLevel getLevel() const { return _level; }
+    void setLevel(LogLevel level) { _level = level; }
+
+private:
+    std::string _name;
+    LogLevel _level;
+    std::list<Appender::ptr> _appenders;
+};
+
+class Appender {
+public:
+    typedef std::shared_ptr<Appender> ptr;
+
+    virtual ~Appender();
+    void log(LogLevel level, LogEvent::ptr event);
+
+private:
+    LogLevel _level;
+};
+
+class Formatter {
+public:
+    typedef std::shared_ptr<Formatter> ptr;
+
+    std::string format(LogEvent::ptr event);
+};
+
+class StdLogAppender : public Appender {};
+
+class FileLogAppender : public Appender {};
 
 };
 
