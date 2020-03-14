@@ -5,6 +5,8 @@
 #include <stdint.h>
 #include <memory>
 #include <list>
+#include <sstream>
+#include <fstream>
 
 namespace sf {
 
@@ -64,9 +66,9 @@ public:
     typedef std::shared_ptr<Appender> ptr;
 
     virtual ~Appender();
-    void log(LogLevel level, LogEvent::ptr event);
+    virtual void log(LogLevel level, LogEvent::ptr event) = 0;
 
-private:
+protected:
     LogLevel _level;
 };
 
@@ -77,9 +79,23 @@ public:
     std::string format(LogEvent::ptr event);
 };
 
-class StdLogAppender : public Appender {};
+class StdLogAppender : public Appender {
+public:
+    typedef std::shared_ptr<StdLogAppender> ptr;
+    virtual void log(LogLevel level, LogEvent::ptr event) override;
+};
 
-class FileLogAppender : public Appender {};
+class FileLogAppender : public Appender {
+public:
+    typedef std::shared_ptr<FileLogAppender> ptr;
+
+    FileLogAppender(const std::string& filename);
+    virtual void log(LogLevel level, LogEvent::ptr event) override;
+
+private:
+    std::string _filename;
+    std::ofstream _file;
+};
 
 };
 
