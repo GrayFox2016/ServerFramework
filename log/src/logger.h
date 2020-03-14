@@ -7,6 +7,7 @@
 #include <list>
 #include <sstream>
 #include <fstream>
+#include <iostream>
 
 namespace sf {
 
@@ -68,8 +69,12 @@ public:
     virtual ~Appender();
     virtual void log(LogLevel level, LogEvent::ptr event) = 0;
 
+    void setFormatter(Formatter::ptr formatter) { _formatter = formatter; }
+    Formatter::ptr getFormatter() const { return _formatter; }
+
 protected:
     LogLevel _level;
+    Formatter::ptr _formatter;
 };
 
 class Formatter {
@@ -91,6 +96,7 @@ public:
 
     FileLogAppender(const std::string& filename);
     virtual void log(LogLevel level, LogEvent::ptr event) override;
+    bool reopen();
 
 private:
     std::string _filename;
